@@ -28,3 +28,51 @@ A full-stack, multi-tenant SaaS platform giving logistics companies real-time vi
 - Public, authentication-free tracking page with field-level data minimization
 - 11 automated tests covering state machine logic and tenant isolation
 ---
+## Getting Started
+ 
+```bash
+git clone https://github.com/Abhinandan-Dwivedi/fleet-tracker.git 
+cd fleet-tracker
+pnpm install
+ 
+docker run --name fleet-tracker-db \
+  -e POSTGRES_PASSWORD=password -e POSTGRES_DB=fleet_tracker \
+  -p 5432:5432 -v fleet-tracker-data:/var/lib/postgresql/data -d postgres:16
+```
+ 
+Create a `.env` file:
+ 
+```bash
+DATABASE_URL="postgresql://postgres:password@localhost:5432/fleet_tracker"
+AUTH_SECRET="generate-with-npx-auth-secret"
+NEXTAUTH_URL="http://localhost:3000"
+PUSHER_APP_ID="..."
+PUSHER_KEY="..."
+PUSHER_SECRET="..."
+PUSHER_CLUSTER="..."
+NEXT_PUBLIC_PUSHER_KEY="..."
+NEXT_PUBLIC_PUSHER_CLUSTER="..."
+```
+ 
+```bash
+npx prisma migrate dev
+npx prisma db seed
+pnpm dev
+```
+ 
+| Role | Email |
+|---|---|
+| Dispatcher | `dispatcher@acme.com` |
+| Fleet Manager | `manager@acme.com` |
+| Customer | `customer@acme.com` |
+ 
+**Run tests:** `pnpm test`
+ 
+---
+ 
+## Roadmap
+ 
+- [ ] Fleet manager analytics dashboard
+- [ ] Real-time alerting (delays, geofencing, offline drivers)
+- [ ] CI pipeline + production deployment
+---
