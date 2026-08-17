@@ -69,10 +69,5 @@ pnpm dev
 **Run tests:** `pnpm test`
  
 ---
+[🔗 Live Demo]([https://fleet-tracker-tau.vercel.app/])
  
-## Roadmap
- 
-- [ ] Fleet manager analytics dashboard
-- [ ] Real-time alerting (delays, geofencing, offline drivers)
-- [ ] CI pipeline + production deployment
----
