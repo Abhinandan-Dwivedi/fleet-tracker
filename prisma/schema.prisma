@@ -28,14 +28,15 @@ enum DriverStatus {
 }
 
 model Company {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
+  id         String     @id @default(cuid())
+  name       String
+  createdAt  DateTime   @default(now())
 
-  users     User[]
-  drivers   Driver[]
-  vehicles  Vehicle[]
+  users      User[]
+  drivers    Driver[]
+  vehicles   Vehicle[]
   deliveries Delivery[]
+  invites    Invite[]
 }
 
 model User {
@@ -100,6 +101,18 @@ model LocationHistory {
   latitude  Float
   longitude Float
   timestamp DateTime @default(now())
+}
+
+model Invite {
+  id        String   @id @default(cuid())
+  token     String   @unique @default(cuid())
+  email     String
+  role      Role
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  accepted  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }
 
 model Account {

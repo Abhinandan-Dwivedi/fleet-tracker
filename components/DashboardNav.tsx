@@ -13,11 +13,12 @@ export function DashboardNav({ userName, userRole }: DashboardNavProps) {
   const pathname = usePathname();
 
   const staffLinks = [
-    { href: "/dashboard", label: "Overview" },
-    { href: "/dashboard/drivers", label: "Drivers" },
-    { href: "/dashboard/deliveries", label: "Deliveries" },
-    { href: "/dashboard/map", label: "Live Map" },
-  ];
+  { href: "/dashboard", label: "Overview" },
+  { href: "/dashboard/drivers", label: "Drivers" },
+  { href: "/dashboard/deliveries", label: "Deliveries" },
+  { href: "/dashboard/map", label: "Live Map" },
+  { href: "/dashboard/team", label: "Team" },
+];
 
   const customerLinks = [{ href: "/dashboard", label: "Overview" }];
 

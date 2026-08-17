@@ -1,38 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import { trpc } from "@/lib/trpc";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [companyName, setCompanyName] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const signup = trpc.auth.signup.useMutation({
+    onError: (err) => setError(err.message),
+    onSuccess: async () => {
+      // auto-login right after account creation, no separate step
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+      if (result?.error) {
+        setError("Account created, but sign-in failed. Try logging in.");
+        router.push("/login");
+        return;
+      }
+      router.push("/dashboard");
+      router.refresh();
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setIsSubmitting(true);
-
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setError("Invalid email or password");
-      setIsSubmitting(false);
-      return;
-    }
-
-    router.push("/dashboard");
-    router.refresh();
+    signup.mutate({ companyName, name, email, password });
   };
+
+  // NOTE: `signup.isPending` is React Query v5 syntax. If this project is on
+  // @tanstack/react-query v4, swap it for `signup.isLoading` in both spots below.
 
   return (
     <div className="min-h-screen grid lg:grid-cols-2 bg-[#0d1117]">
@@ -49,11 +58,11 @@ export default function LoginPage() {
         />
         <div
           className="absolute -top-24 -left-24 w-96 h-96 rounded-full blur-3xl opacity-20"
-          style={{ background: "#3fb6ae" }}
+          style={{ background: "#f2a63c" }}
         />
         <div
           className="absolute bottom-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-10"
-          style={{ background: "#f2a63c" }}
+          style={{ background: "#3fb6ae" }}
         />
 
         <div className="relative z-10 flex items-center gap-2.5">
@@ -68,45 +77,51 @@ export default function LoginPage() {
             />
           </span>
           <span className="font-semibold tracking-[0.15em] text-sm text-white">
-             FLEETRACK
+            FLEETTRACK
           </span>
         </div>
 
-        {/* Decorative — a styled <p>, not a heading. The form's <h1> is the
-            only real heading on this page. */}
+        {/* Decorative marketing copy — not real page structure, so this is a
+            styled <p>, not an <h2>. The form's <h1> below is the page's only
+            real heading at this level. */}
         <div className="relative z-10 max-w-md">
           <p className="text-4xl font-semibold text-white leading-tight tracking-tight">
-            Every driver.
+            Run your fleet from
             <br />
-            Every delivery.
-            <br />
-            One live view.
+            one dispatch console.
           </p>
           <p className="mt-4 text-white/50 text-[15px] leading-relaxed">
-            Sign back in to pick up right where dispatch left off.
+            Track drivers in real time, manage vehicles, and keep every
+            delivery on schedule - built for teams who can&apos;t afford to
+            lose a shipment.
           </p>
 
-          <div className="mt-10 flex items-center gap-6">
+          <div className="mt-10 flex flex-col gap-4">
             {[
-              { label: "ACTIVE", color: "#f2a63c" },
-              { label: "IDLE", color: "#3fb6ae" },
-              { label: "OFFLINE", color: "#5c6774" },
-            ].map((s) => (
-              <div key={s.label} className="flex items-center gap-2">
-                <span
-                  className="w-1.5 h-1.5 rounded-full"
-                  style={{ background: s.color }}
-                />
-                <span className="font-mono text-[11px] tracking-widest text-white/50">
-                  {s.label}
+              "Live GPS tracking, no polling delay",
+              "Role-based access for your whole team",
+              "Delivery history & audit trail built in",
+            ].map((line) => (
+              <div key={line} className="flex items-center gap-3">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1f3d3a]">
+                  <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M2.5 6.5L4.8 8.8L9.5 3.5"
+                      stroke="#3fb6ae"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
                 </span>
+                <span className="text-sm text-white/70">{line}</span>
               </div>
             ))}
           </div>
         </div>
 
         <p className="relative z-10 text-xs text-white/30 font-mono">
-        {/* © {new Date().getFullYear()} Fleetline — dispatch console */}
+          {/* © {new Date().getFullYear()} Fleetline — dispatch console */}
         </p>
       </div>
 
@@ -130,11 +145,13 @@ export default function LoginPage() {
             </span>
           </div>
 
+          {/* the page's actual, only h1 */}
           <h1 className="text-2xl font-semibold text-[#10141a] tracking-tight">
-            Sign in to Fleettrack
+            Create your company account
           </h1>
           <p className="text-sm text-[#6b7280] mt-1.5 mb-7 leading-relaxed">
-            Welcome back - enter your details to reach the dispatch console.
+            You&apos;ll be set up as the fleet manager - invite your team
+            after.
           </p>
 
           {error && (
@@ -159,6 +176,27 @@ export default function LoginPage() {
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Field label="Company name">
+              <input
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Speedy Deliveries"
+                autoComplete="organization"
+                required
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Your name">
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                required
+                className={inputClass}
+              />
+            </Field>
+
             <Field label="Email">
               <input
                 type="email"
@@ -170,23 +208,14 @@ export default function LoginPage() {
               />
             </Field>
 
-            <Field
-              label="Password"
-              action={
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-[#6b7280] hover:text-[#10141a] hover:underline underline-offset-2"
-                >
-                  Forgot password?
-                </Link>
-              }
-            >
+            <Field label="Password" hint="At least 8 characters">
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
+                  minLength={8}
                   required
                   className={`${inputClass} pr-10`}
                 />
@@ -226,13 +255,13 @@ export default function LoginPage() {
 
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={signup.isPending}
               className="mt-2 w-full flex items-center justify-center gap-2 bg-[#10141a] text-white text-sm font-medium py-2.5 rounded-lg
                          transition-all hover:bg-[#1b222a] active:scale-[0.99]
                          disabled:opacity-60 disabled:cursor-not-allowed
                          focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
             >
-              {isSubmitting && (
+              {signup.isPending && (
                 <svg
                   className="animate-spin"
                   width="14"
@@ -256,17 +285,17 @@ export default function LoginPage() {
                   />
                 </svg>
               )}
-              {isSubmitting ? "Signing in…" : "Sign in"}
+              {signup.isPending ? "Creating account…" : "Create account"}
             </button>
           </form>
 
           <p className="text-sm text-[#6b7280] text-center mt-6">
-            New company?{" "}
+            Already have an account?{" "}
             <Link
-              href="/signup"
+              href="/login"
               className="text-[#10141a] font-medium hover:underline underline-offset-2"
             >
-              Create an account
+              Sign in
             </Link>
           </p>
         </div>
@@ -282,18 +311,18 @@ const inputClass =
 
 function Field({
   label,
-  action,
+  hint,
   children,
 }: {
   label: string;
-  action?: React.ReactNode;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <label className="block">
       <div className="flex items-baseline justify-between mb-1.5">
         <span className="text-sm font-medium text-[#10141a]">{label}</span>
-        {action}
+        {hint && <span className="text-xs text-[#a3a8b3]">{hint}</span>}
       </div>
       {children}
     </label>

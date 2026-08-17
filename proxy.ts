@@ -24,13 +24,13 @@ export default auth((req) => {
   }
 
   // Already logged in, trying to visit the login page again → send to dashboard
-  if (isLoggedIn && pathname === "/login") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
+ if (isLoggedIn && (pathname === "/login" || pathname === "/signup")) {
+  return NextResponse.redirect(new URL("/dashboard", req.url));
+}
 
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: ["/dashboard/:path*", "/login", "/signup"],
 };

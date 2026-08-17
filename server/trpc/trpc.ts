@@ -45,3 +45,24 @@ const isStaff = t.middleware(({ ctx, next }) => {
 });
 
 export const staffProcedure = t.procedure.use(isStaff);
+
+const isFleetManager = t.middleware(({ ctx, next }) => {
+  if (!ctx.session?.user) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+
+  if (ctx.session.user.role !== "FLEET_MANAGER") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Only fleet managers can perform this action",
+    });
+  }
+
+  return next({
+    ctx: {
+      session: { ...ctx.session, user: ctx.session.user },
+    },
+  });
+});
+
+export const fleetManagerProcedure = t.procedure.use(isFleetManager);
