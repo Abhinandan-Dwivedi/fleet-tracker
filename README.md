@@ -69,5 +69,5 @@ pnpm dev
 **Run tests:** `pnpm test`
  
 ---
-[🔗 Live Demo]([https://fleet-tracker-tau.vercel.app/])
+[🔗 Live Demo](https://fleet-tracker-tau.vercel.app/)
  
