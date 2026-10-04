@@ -2,6 +2,18 @@
 
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
+import {
+  CountChip,
+  EmptyState,
+  ErrorAlert,
+  Icons,
+  ListSkeleton,
+  LivePill,
+  PageHeader,
+  Spinner,
+  avatarTint,
+  humanize,
+} from "@/components/ui";
 
 export default function DriversPage() {
   const [name, setName] = useState("");
@@ -27,144 +39,138 @@ export default function DriversPage() {
     switch (status) {
       case "AVAILABLE":
       case "ACTIVE":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "BUSY":
       case "ON_DELIVERY":
-        return "bg-amber-50 text-amber-700 border-amber-200/80";
+      case "IDLE":
+        return "bg-amber-50 text-amber-800 border-amber-200";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-slate-100 text-slate-600 border-slate-200";
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Fleet Drivers
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Manage active personnel, onboarding, and availability statuses.
-            </p>
-          </div>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-slate-200 text-slate-600 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Active Fleet
-          </span>
+    <div className="page animate-fade-in space-y-8">
+      <PageHeader
+        eyebrow="Fleet"
+        title="Drivers"
+        description="Manage active personnel, onboarding, and availability statuses."
+        action={<LivePill label="Active fleet" />}
+      />
+
+      {/* Add driver */}
+      <section className="card p-5 sm:p-6">
+        <div className="mb-5">
+          <h2 className="text-base font-semibold text-foreground">Add a driver</h2>
+          <p className="mt-0.5 text-sm text-muted">
+            New drivers become available for dispatch immediately.
+          </p>
         </div>
 
-        {/* Compact Add Driver Card */}
-        <div className="bg-white border border-slate-200/80 rounded-xl shadow-sm p-4 sm:p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Add New Driver
-            </h2>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-end">
+          <div className="w-full flex-1">
+            <label htmlFor="driver-name" className="label">
+              Driver name
+            </label>
+            <input
+              id="driver-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. John Doe"
+              className="input"
+              required
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 items-end">
-            <div className="flex-1 w-full">
-              <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                Driver Name
-              </label>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. John Doe"
-                className="w-full bg-slate-50/50 border border-slate-200 text-slate-900 text-xs rounded-lg px-3 py-2 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-                required
-              />
-            </div>
+          <div className="w-full flex-1">
+            <label htmlFor="driver-phone" className="label">
+              Phone number
+            </label>
+            <input
+              id="driver-phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="e.g. +1 (555) 019-2834"
+              className="input"
+              required
+            />
+          </div>
 
-            <div className="flex-1 w-full">
-              <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                Phone Number
-              </label>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g. +1 (555) 019-2834"
-                className="w-full bg-slate-50/50 border border-slate-200 text-slate-900 text-xs rounded-lg px-3 py-2 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-                required
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={createDriver.isPending}
+            className="btn btn-primary w-full sm:w-auto"
+          >
+            {createDriver.isPending ? (
+              <>
+                <Spinner />
+                Adding…
+              </>
+            ) : (
+              <>
+                <Icons.Plus className="h-4 w-4" />
+                Add driver
+              </>
+            )}
+          </button>
+        </form>
 
-            <button
-              type="submit"
-              disabled={createDriver.isPending}
-              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-5 rounded-lg disabled:opacity-50 transition-all text-xs shadow-sm flex items-center justify-center gap-2 shrink-0 h-[34px]"
-            >
-              {createDriver.isPending ? (
-                <>
-                  <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                  <span>Adding...</span>
-                </>
-              ) : (
-                <span>+ Add Driver</span>
-              )}
-            </button>
-          </form>
+        {createDriver.error && (
+          <div className="mt-4">
+            <ErrorAlert message={createDriver.error.message} />
+          </div>
+        )}
+      </section>
 
-          {createDriver.error && (
-            <div className="p-2.5 rounded-lg bg-red-50 border border-red-200/80 text-red-600 text-xs mt-3 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{createDriver.error.message}</span>
-            </div>
-          )}
+      {/* Roster */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <h2 className="section-label">Registered drivers</h2>
+          <CountChip count={driversQuery.data?.length || 0} />
         </div>
 
-        {/* Drivers Roster */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Registered Personnel ({driversQuery.data?.length || 0})
-            </h2>
-          </div>
+        {driversQuery.isLoading && <ListSkeleton />}
 
-          {!driversQuery.isLoading && driversQuery.data?.length === 0 && (
-            <div className="text-center py-12 bg-white border border-dashed border-slate-200 rounded-xl shadow-sm">
-              <p className="text-xs font-medium text-slate-500">No drivers registered yet</p>
-            </div>
-          )}
+        {!driversQuery.isLoading && driversQuery.data?.length === 0 && (
+          <EmptyState
+            icon={<Icons.Drivers className="h-5 w-5" />}
+            title="No drivers registered yet"
+            description="Add your first driver above to start dispatching deliveries."
+          />
+        )}
 
-          <div className="grid grid-cols-1 gap-2.5">
-            {driversQuery.data?.map((driver) => (
-              <div
+        {!!driversQuery.data?.length && (
+          <ul className="card divide-y divide-line overflow-hidden">
+            {driversQuery.data.map((driver) => (
+              <li
                 key={driver.id}
-                className="bg-white border border-slate-200/80 rounded-xl p-3.5 shadow-sm hover:shadow-md transition-all flex items-center justify-between gap-4"
+                className="flex items-center justify-between gap-4 px-4 py-3.5 transition-colors hover:bg-surface-muted sm:px-5"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 font-semibold flex items-center justify-center text-xs shrink-0 border border-slate-200/60">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className={`avatar ${avatarTint(driver.name ?? "D")}`}>
                     {driver.name?.[0]?.toUpperCase() || "D"}
                   </div>
-                  <div>
-                    <h3 className="font-semibold text-slate-900 text-sm">
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-semibold text-foreground">
                       {driver.name}
                     </h3>
-                    <p className="text-xs text-slate-500 font-mono mt-0.5">
-                      {driver.phone}
+                    <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-muted">
+                      <Icons.Phone className="h-3.5 w-3.5 shrink-0 text-subtle" />
+                      <span className="truncate">{driver.phone}</span>
                     </p>
                   </div>
                 </div>
 
-                <span
-                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide border shrink-0 ${getStatusBadge(
-                    driver.status
-                  )}`}
-                >
-                  {driver.status || "AVAILABLE"}
+                <span className={`badge ${getStatusBadge(driver.status)}`}>
+                  <span className="badge-dot" />
+                  {humanize(driver.status || "AVAILABLE")}
                 </span>
-              </div>
+              </li>
             ))}
-          </div>
-        </div>
-      </div>
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

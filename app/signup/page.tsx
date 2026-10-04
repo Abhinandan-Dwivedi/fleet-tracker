@@ -44,9 +44,9 @@ export default function SignupPage() {
   // @tanstack/react-query v4, swap it for `signup.isLoading` in both spots below.
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-[#0d1117]">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-ink">
       {/* Left — brand / context panel */}
-      <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-[#10141a] border-r border-white/5">
+      <div className="relative hidden lg:flex flex-col justify-between p-12 overflow-hidden bg-ink border-r border-white/5">
         {/* ambient grid + glow */}
         <div
           className="absolute inset-0 opacity-[0.07]"
@@ -58,7 +58,7 @@ export default function SignupPage() {
         />
         <div
           className="absolute -top-24 -left-24 w-96 h-96 rounded-full blur-3xl opacity-20"
-          style={{ background: "#f2a63c" }}
+          style={{ background: "#F5A623" }}
         />
         <div
           className="absolute bottom-0 right-0 w-80 h-80 rounded-full blur-3xl opacity-10"
@@ -69,11 +69,11 @@ export default function SignupPage() {
           <span className="relative flex h-2.5 w-2.5">
             <span
               className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-              style={{ background: "#f2a63c" }}
+              style={{ background: "#F5A623" }}
             />
             <span
               className="relative inline-flex rounded-full h-2.5 w-2.5"
-              style={{ background: "#f2a63c" }}
+              style={{ background: "#F5A623" }}
             />
           </span>
           <span className="font-semibold tracking-[0.15em] text-sm text-white">
@@ -126,18 +126,18 @@ export default function SignupPage() {
       </div>
 
       {/* Right — form panel */}
-      <div className="flex items-center justify-center p-6 sm:p-10 bg-[#f7f8fa]">
+      <div className="flex items-center justify-center p-6 sm:p-10 bg-background">
         <div className="w-full max-w-sm">
           {/* mobile brand mark */}
           <div className="lg:hidden flex items-center gap-2.5 mb-8">
             <span className="relative flex h-2.5 w-2.5">
               <span
                 className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
-                style={{ background: "#f2a63c" }}
+                style={{ background: "#F5A623" }}
               />
               <span
                 className="relative inline-flex rounded-full h-2.5 w-2.5"
-                style={{ background: "#f2a63c" }}
+                style={{ background: "#F5A623" }}
               />
             </span>
             <span className="font-semibold tracking-[0.15em] text-sm text-[#10141a]">
@@ -225,7 +225,7 @@ export default function SignupPage() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                   aria-pressed={showPassword}
                   className="absolute right-0 top-0 h-full px-3 flex items-center text-[#a3a8b3] hover:text-[#10141a] transition-colors
-                             focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-amber-400 rounded-r-lg"
+                             focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand rounded-r-lg"
                 >
                   {showPassword ? (
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none">
@@ -256,10 +256,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={signup.isPending}
-              className="mt-2 w-full flex items-center justify-center gap-2 bg-[#10141a] text-white text-sm font-medium py-2.5 rounded-lg
-                         transition-all hover:bg-[#1b222a] active:scale-[0.99]
-                         disabled:opacity-60 disabled:cursor-not-allowed
-                         focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-400"
+              className="btn btn-primary mt-2 w-full"
             >
               {signup.isPending && (
                 <svg
@@ -304,10 +301,7 @@ export default function SignupPage() {
   );
 }
 
-const inputClass =
-  "w-full border border-[#e2e4e9] bg-white rounded-lg px-3.5 py-2.5 text-sm text-[#10141a] " +
-  "placeholder:text-[#a3a8b3] transition-shadow " +
-  "focus:outline-none focus:ring-2 focus:ring-amber-400/40 focus:border-amber-400";
+const inputClass = "input";
 
 function Field({
   label,

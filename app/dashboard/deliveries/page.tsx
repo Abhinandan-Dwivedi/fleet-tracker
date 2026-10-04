@@ -2,6 +2,18 @@
 
 import { trpc } from "@/lib/trpc";
 import { useState } from "react";
+import {
+  CountChip,
+  EmptyState,
+  ErrorAlert,
+  Icons,
+  ListSkeleton,
+  LivePill,
+  PageHeader,
+  Spinner,
+  avatarTint,
+  humanize,
+} from "@/components/ui";
 
 export default function DeliveriesPage() {
   const [pickupAddress, setPickupAddress] = useState("");
@@ -42,209 +54,216 @@ export default function DeliveriesPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return "bg-amber-50 text-amber-700 border-amber-200/80";
+        return "bg-amber-50 text-amber-800 border-amber-200";
       case "ASSIGNED":
+        return "bg-sky-50 text-sky-700 border-sky-200";
       case "IN_TRANSIT":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200/80";
+        return "bg-violet-50 text-violet-700 border-violet-200";
+      case "DELIVERED":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "FAILED":
+        return "bg-red-50 text-red-700 border-red-200";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-slate-100 text-slate-600 border-slate-200";
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-6">
-        {/* Header Section */}
-        <div className="flex items-center justify-between border-b border-slate-200/80 pb-4">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-              Delivery Operations
-            </h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Dispatch, track, and assign fleet drivers to active orders.
-            </p>
-          </div>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white border border-slate-200 text-slate-600 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Live Dispatch
-          </span>
+    <div className="page animate-fade-in space-y-8">
+      <PageHeader
+        eyebrow="Dispatch"
+        title="Deliveries"
+        description="Dispatch, track, and assign fleet drivers to active orders."
+        action={<LivePill label="Live dispatch" />}
+      />
+
+      {/* New dispatch request */}
+      <section className="card p-5 sm:p-6">
+        <div className="mb-5">
+          <h2 className="text-base font-semibold text-foreground">New dispatch request</h2>
+          <p className="mt-0.5 text-sm text-muted">
+            Create a delivery, then assign it to an available driver below.
+          </p>
         </div>
 
-        {/* Compact Dispatch Form Card */}
-        <div className="bg-white border border-slate-200/80 rounded-xl shadow-sm p-4 sm:p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              New Dispatch Request
-            </h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="pickup" className="label">
+                Pickup address
+              </label>
+              <input
+                id="pickup"
+                value={pickupAddress}
+                onChange={(e) => setPickupAddress(e.target.value)}
+                placeholder="131 Sonepat"
+                className="input"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="dropoff" className="label">
+                Dropoff address
+              </label>
+              <input
+                id="dropoff"
+                value={dropoffAddress}
+                onChange={(e) => setDropoffAddress(e.target.value)}
+                placeholder="e.g. 742 Evergreen"
+                className="input"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="customer-name" className="label">
+                Customer name
+              </label>
+              <input
+                id="customer-name"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                placeholder="e.g. Kundan Dwivedi"
+                className="input"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="customer-phone" className="label">
+                Contact phone
+              </label>
+              <input
+                id="customer-phone"
+                type="tel"
+                value={customerPhone}
+                onChange={(e) => setCustomerPhone(e.target.value)}
+                placeholder="e.g. +91 8485012834"
+                className="input"
+                required
+              />
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                  Pickup Address
-                </label>
-                <input
-                  value={pickupAddress}
-                  onChange={(e) => setPickupAddress(e.target.value)}
-                  placeholder="131 Sonepat"
-                  className="w-full bg-slate-50/50 border border-slate-200 text-slate-900 text-xs rounded-lg px-3 py-2 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-                  required
-                />
-              </div>
+          {createDelivery.error && <ErrorAlert message={createDelivery.error.message} />}
 
-              <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                  Dropoff Address
-                </label>
-                <input
-                  value={dropoffAddress}
-                  onChange={(e) => setDropoffAddress(e.target.value)}
-                  placeholder="e.g. 742 Evergreen"
-                  className="w-full bg-slate-50/50 border border-slate-200 text-slate-900 text-xs rounded-lg px-3 py-2 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-                  required
-                />
-              </div>
+          <div className="flex justify-end border-t border-line pt-5">
+            <button
+              type="submit"
+              disabled={createDelivery.isPending}
+              className="btn btn-primary w-full sm:w-auto"
+            >
+              {createDelivery.isPending ? (
+                <>
+                  <Spinner />
+                  Creating…
+                </>
+              ) : (
+                <>
+                  <Icons.Plus className="h-4 w-4" />
+                  Create delivery
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      </section>
 
-              <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                  Customer Name
-                </label>
-                <input
-                  value={customerName}
-                  onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. Kundan Dwivedi"
-                  className="w-full bg-slate-50/50 border border-slate-200 text-slate-900 text-xs rounded-lg px-3 py-2 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-slate-500 mb-1">
-                  Contact Phone
-                </label>
-                <input
-                  value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="e.g. +91 8485012834"
-                  className="w-full bg-slate-50/50 border border-slate-200 text-slate-900 text-xs rounded-lg px-3 py-2 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end pt-1">
-              <button
-                type="submit"
-                disabled={createDelivery.isPending}
-                className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white font-medium py-2 px-5 rounded-lg disabled:opacity-50 transition-all text-xs shadow-sm flex items-center justify-center gap-2"
-              >
-                {createDelivery.isPending ? (
-                  <>
-                    <svg className="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    <span>Creating...</span>
-                  </>
-                ) : (
-                  <span>+ Create Delivery</span>
-                )}
-              </button>
-            </div>
-          </form>
-
-          {createDelivery.error && (
-            <div className="p-2.5 rounded-lg bg-red-50 border border-red-200/80 text-red-600 text-xs mt-3 flex items-center gap-2">
-              <svg className="w-3.5 h-3.5 shrink-0 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{createDelivery.error.message}</span>
-            </div>
-          )}
+      {/* Deliveries feed */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <h2 className="section-label">Active deliveries</h2>
+          <CountChip count={deliveriesQuery.data?.length || 0} />
         </div>
 
-        {/* Deliveries Feed */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Active Deliveries ({deliveriesQuery.data?.length || 0})
-            </h2>
-          </div>
+        {deliveriesQuery.isLoading && <ListSkeleton />}
 
-          {!deliveriesQuery.isLoading && deliveriesQuery.data?.length === 0 && (
-            <div className="text-center py-12 bg-white border border-dashed border-slate-200 rounded-xl shadow-sm">
-              <p className="text-xs font-medium text-slate-500">No active deliveries</p>
-            </div>
-          )}
+        {!deliveriesQuery.isLoading && deliveriesQuery.data?.length === 0 && (
+          <EmptyState
+            icon={<Icons.Package className="h-5 w-5" />}
+            title="No active deliveries"
+            description="New dispatch requests you create will appear here."
+          />
+        )}
 
-          <div className="grid grid-cols-1 gap-3">
-            {deliveriesQuery.data?.map((delivery) => (
-              <div
-                key={delivery.id}
-                className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 font-semibold flex items-center justify-center text-xs shrink-0 border border-slate-200/60">
-                      {delivery.customerName?.[0]?.toUpperCase() || "C"}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-900 text-sm">
-                        {delivery.customerName}
-                      </h3>
-                      {delivery.customerPhone && (
-                        <p className="text-xs text-slate-400">
-                          {delivery.customerPhone}
-                        </p>
-                      )}
-                    </div>
+        <div className="grid grid-cols-1 gap-4">
+          {deliveriesQuery.data?.map((delivery) => (
+            <article key={delivery.id} className="card card-interactive overflow-hidden">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3 p-4 sm:p-5">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className={`avatar ${avatarTint(delivery.customerName ?? "C")}`}>
+                    {delivery.customerName?.[0]?.toUpperCase() || "C"}
                   </div>
-
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold tracking-wide border self-start sm:self-auto ${getStatusBadge(
-                      delivery.status
-                    )}`}
-                  >
-                    {delivery.status}
-                  </span>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-sm font-semibold text-foreground">
+                      {delivery.customerName}
+                    </h3>
+                    {delivery.customerPhone && (
+                      <p className="mt-0.5 flex items-center gap-1.5 font-mono text-xs text-muted">
+                        <Icons.Phone className="h-3.5 w-3.5 shrink-0 text-subtle" />
+                        <span className="truncate">{delivery.customerPhone}</span>
+                      </p>
+                    )}
+                  </div>
                 </div>
 
-                {/* Route Visualizer */}
-                <div className="py-3 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-start gap-2 bg-slate-50/60 p-2.5 rounded-lg border border-slate-100">
-                    <div className="w-2 h-2 rounded-full bg-slate-400 mt-1 shrink-0" />
-                    <div>
-                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                <span className={`badge ${getStatusBadge(delivery.status)}`}>
+                  <span className="badge-dot" />
+                  {humanize(delivery.status)}
+                </span>
+              </div>
+
+              {/* Route */}
+              <div className="px-4 pb-4 sm:px-5 sm:pb-5">
+                <ol className="relative grid gap-3 rounded-lg border border-line bg-surface-muted p-3.5 md:grid-cols-2 md:gap-6">
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 flex h-3 w-3 shrink-0 items-center justify-center rounded-full border-2 border-slate-400 bg-surface" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-subtle">
                         Pickup
                       </p>
-                      <p className="text-slate-800 font-medium mt-0.5">
+                      <p className="mt-0.5 break-words text-sm font-medium text-foreground">
                         {delivery.pickupAddress}
                       </p>
                     </div>
-                  </div>
-
-                  <div className="flex items-start gap-2 bg-slate-50/60 p-2.5 rounded-lg border border-slate-100">
-                    <div className="w-2 h-2 rounded-full bg-slate-900 mt-1 shrink-0" />
-                    <div>
-                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 h-3 w-3 shrink-0 rounded-full bg-brand ring-4 ring-brand/15" />
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-subtle">
                         Dropoff
                       </p>
-                      <p className="text-slate-800 font-medium mt-0.5">
+                      <p className="mt-0.5 break-words text-sm font-medium text-foreground">
                         {delivery.dropoffAddress}
                       </p>
                     </div>
-                  </div>
-                </div>
+                  </li>
+                </ol>
+              </div>
 
-                {/* Driver Assignment Toolbar */}
-                {delivery.status === "PENDING" && (
-                  <div className="mt-1 pt-2.5 border-t border-slate-100 flex items-center gap-2">
-                    <span className="text-xs font-medium text-slate-500 shrink-0">
-                      Assign Driver:
-                    </span>
+              {/* Assigned driver */}
+              {delivery.driver && (
+                <div className="flex items-center gap-2 border-t border-line bg-surface-muted/60 px-4 py-3 text-sm text-muted sm:px-5">
+                  <Icons.Truck className="h-4 w-4 text-subtle" />
+                  Driver
+                  <span className="font-medium text-foreground">{delivery.driver.name}</span>
+                </div>
+              )}
+
+              {/* Driver assignment toolbar */}
+              {delivery.status === "PENDING" && (
+                <div className="flex flex-col gap-2 border-t border-line bg-surface-muted/60 px-4 py-3 sm:flex-row sm:items-center sm:px-5">
+                  <label
+                    htmlFor={`driver-select-${delivery.id}`}
+                    className="shrink-0 text-sm font-medium text-muted"
+                  >
+                    Assign driver
+                  </label>
+                  <div className="flex flex-1 gap-2 sm:max-w-sm">
                     <select
-                      className="bg-slate-50 border border-slate-200 text-slate-900 rounded-lg px-2.5 py-1.5 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900"
+                      className="input select btn-sm h-9 min-w-0 flex-1"
                       id={`driver-select-${delivery.id}`}
                     >
                       <option value="">Select driver...</option>
@@ -268,17 +287,23 @@ export default function DeliveriesPage() {
                         }
                       }}
                       disabled={assignDelivery.isPending}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium disabled:opacity-50 transition-colors shrink-0 shadow-sm"
+                      className="btn btn-success btn-sm"
                     >
+                      {assignDelivery.isPending &&
+                      assignDelivery.variables?.deliveryId === delivery.id ? (
+                        <Spinner className="h-3.5 w-3.5" />
+                      ) : (
+                        <Icons.Check className="h-4 w-4" />
+                      )}
                       Assign
                     </button>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
+                </div>
+              )}
+            </article>
+          ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

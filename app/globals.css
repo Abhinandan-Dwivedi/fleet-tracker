@@ -1,26 +1,202 @@
 @import "tailwindcss";
 
+/* ------------------------------------------------------------------
+   Design tokens
+   Brand: dark "ops console" ink + signal amber, matching the landing page.
+   ------------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f7f9;
+  --foreground: #0f1419;
+
+  --surface: #ffffff;
+  --surface-muted: #f9fafb;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+
+  --ink: #0b0e11; /* sidebar, primary buttons */
+  --ink-soft: #1a2027;
+  --muted: #5b6573; /* secondary text, AA on white */
+  --subtle: #8a94a3; /* tertiary text, meta */
+
+  --brand: #f5a623;
+  --brand-strong: #d98a0b;
+  --brand-ink: #8a5300; /* amber text on light backgrounds */
+
+  color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo,
+    monospace;
+
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 1px 3px rgb(16 24 40 / 0.04);
+  --shadow-card-hover: 0 4px 12px -2px rgb(16 24 40 / 0.08),
+    0 2px 4px -2px rgb(16 24 40 / 0.04);
+
+  --animate-fade-in: fade-in 0.35s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-slide-in: slide-in 0.25s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: rgb(245 166 35 / 0.28);
+}
+
+/* ------------------------------------------------------------------
+   Shared components
+   ------------------------------------------------------------------ */
+@layer components {
+  /* Cards */
+  .card {
+    @apply rounded-xl border border-line bg-surface shadow-card;
+  }
+  .card-interactive {
+    @apply transition-[box-shadow,border-color,transform] duration-200 hover:border-line-strong hover:shadow-card-hover;
+  }
+
+  /* Page scaffolding */
+  .page {
+    @apply mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8 lg:px-10 lg:py-10;
+  }
+  .page-header {
+    @apply flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between;
+  }
+  .page-title {
+    @apply text-2xl font-semibold tracking-tight text-foreground sm:text-[28px];
+  }
+  .page-subtitle {
+    @apply mt-1.5 max-w-xl text-sm leading-relaxed text-muted;
+  }
+  .section-label {
+    @apply text-xs font-semibold uppercase tracking-[0.08em] text-muted;
+  }
+
+  /* Form controls */
+  .label {
+    @apply mb-1.5 block text-[13px] font-medium text-foreground;
+  }
+  .input {
+    @apply h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-foreground shadow-[0_1px_2px_rgb(16_24_40/0.04)] transition-[border-color,box-shadow] duration-150 placeholder:text-subtle hover:border-line-strong focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted;
+  }
+  /* use together with .input: className="input select" */
+  .select {
+    @apply cursor-pointer appearance-none bg-no-repeat pr-9;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%238a94a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 0.75rem center;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex h-10 shrink-0 select-none items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55;
+  }
+  .btn-sm {
+    @apply h-9 px-3 text-[13px];
+  }
+  .btn-primary {
+    @apply bg-ink text-white shadow-[0_1px_2px_rgb(16_24_40/0.12)] hover:bg-ink-soft;
+  }
+  .btn-secondary {
+    @apply border border-line bg-surface text-foreground shadow-[0_1px_2px_rgb(16_24_40/0.04)] hover:border-line-strong hover:bg-surface-muted;
+  }
+  .btn-success {
+    @apply bg-emerald-600 text-white shadow-[0_1px_2px_rgb(16_24_40/0.12)] hover:bg-emerald-700;
+  }
+  .btn-danger {
+    @apply bg-red-600 text-white shadow-[0_1px_2px_rgb(16_24_40/0.12)] hover:bg-red-700;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium whitespace-nowrap;
+  }
+  .badge-dot {
+    @apply h-1.5 w-1.5 rounded-full bg-current;
+  }
+
+  /* Alerts */
+  .alert-error {
+    @apply flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50 px-3.5 py-3 text-sm text-red-700;
+  }
+
+  /* Avatars */
+  .avatar {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-semibold;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    @apply animate-pulse rounded-md bg-slate-200/70;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Leaflet: keep popups consistent with the app */
+.leaflet-container {
+  font-family: var(--font-sans);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  box-shadow: 0 8px 24px -6px rgb(16 24 40 / 0.18);
+}
+.leaflet-popup-content {
+  margin: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
 }

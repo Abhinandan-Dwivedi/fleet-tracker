@@ -14,17 +14,22 @@ export default function DashboardError({
   }, [error]);
 
   return (
-    <div className="p-8 flex flex-col items-center justify-center min-h-[400px] text-center">
-      <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
-      <p className="text-gray-500 mb-6">
-        We hit an unexpected error loading this page.
-      </p>
-      <button
-        onClick={reset}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
-        Try again
-      </button>
+    <div className="page flex min-h-[60vh] items-center justify-center">
+      <div className="card w-full max-w-md animate-fade-in p-8 text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50 text-red-600 ring-8 ring-red-50/50">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" className="h-6 w-6" aria-hidden>
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4.5M12 16h.01" />
+          </svg>
+        </div>
+        <h2 className="text-lg font-semibold text-foreground">Something went wrong</h2>
+        <p className="mt-1.5 text-sm text-muted">
+          We hit an unexpected error loading this page.
+        </p>
+        <button onClick={reset} className="btn btn-primary mt-6">
+          Try again
+        </button>
+      </div>
     </div>
   );
 }
